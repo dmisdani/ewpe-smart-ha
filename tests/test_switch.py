@@ -116,3 +116,24 @@ def test_catalog_does_not_duplicate_described_keys() -> None:
 def test_catalog_switch_can_be_disabled_by_default() -> None:
     entity, _ = _make_switch({"AutoClean": 0}, param="AutoClean")
     assert entity.entity_registry_enabled_default is False
+
+
+@pytest.mark.asyncio
+async def test_dehumidifier_power_switch() -> None:
+    entity, device = _make_switch(
+        {"Dwet": 7, "DwatSen": 55, "Pow": 0}, param="Pow"
+    )
+    assert entity.translation_key == "power"
+    assert entity.entity_registry_enabled_default is True
+    assert entity.is_on is False
+
+    await entity.async_turn_on()
+    device.set_state.assert_awaited_once_with({"Pow": 1})
+    entity.coordinator.async_request_refresh.assert_awaited_once()
+
+    entity.coordinator.data = {"Dwet": 7, "DwatSen": 55, "Pow": 1}
+    assert entity.is_on is True
+
+    device.set_state.reset_mock()
+    await entity.async_turn_off()
+    device.set_state.assert_awaited_once_with({"Pow": 0})

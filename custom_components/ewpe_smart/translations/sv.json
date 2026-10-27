@@ -178,9 +178,6 @@
       "dmod": {
         "name": "Variant av torkläge"
       },
-      "dwatful": {
-        "name": "Kondensvatten fullt"
-      },
       "dwet": {
         "name": "Kondensvattentillstånd"
       },
@@ -479,6 +476,9 @@
       },
       "drain_pump": {
         "name": "Dräneringspump"
+      },
+      "dwatful": {
+        "name": "Kondensvatten fullt"
       }
     },
     "number": {

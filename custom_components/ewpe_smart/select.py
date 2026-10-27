@@ -96,11 +96,14 @@ def supported_select_descriptions(
     """Return swing selects supported by this device snapshot."""
     descriptions = SELECT_DESCRIPTIONS
     if is_dehumidifier(data):
-        descriptions += (EwpeSelectDescription(
-            param="WdSpd", unique_id_suffix="fan_speed", translation_key="fan_speed",
-            device_to_option={0: "auto", 1: "low", 2: "medium_low",
-                              3: "medium", 4: "medium_high", 5: "high"},
-        ),)
+        descriptions += (
+            EwpeSelectDescription(
+                param="WdSpd",
+                unique_id_suffix="fan_speed",
+                translation_key="fan_speed",
+                device_to_option={1: "low", 3: "high"},
+            ),
+        )
     return tuple(desc for desc in descriptions if _select_param_supported(desc, data))
 
 

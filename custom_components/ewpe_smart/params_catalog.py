@@ -397,7 +397,6 @@ _REMAINING_SENSOR_PARAMS: tuple[tuple[str, Literal["int", "text"]], ...] = (
     ("Coolmod", "int"),
     ("DFPoint", "int"),
     ("Dmod", "int"),
-    ("DwatFul", "int"),
     ("Dwet", "int"),
     ("ElcAllKwhClr", "int"),
     ("ElcEn", "int"),
@@ -454,6 +453,12 @@ class BinarySensorDescriptionRef:
 
 
 BINARY_SENSOR_DESCRIPTIONS: tuple[BinarySensorDescriptionRef, ...] = (
+    BinarySensorDescriptionRef(
+        param="DwatFul",
+        unique_id_suffix="dwatful",
+        translation_key="dwatful",
+        device_class="problem",
+    ),
     BinarySensorDescriptionRef(
         param="ReplaceHEPA",
         unique_id_suffix="replace_hepa",
@@ -640,7 +645,6 @@ DISABLED_BY_DEFAULT_DIAGNOSTIC: frozenset[str] = frozenset(
         "CpsTem",
         "DFPoint",
         "Dpump",
-        "DwatFul",
         "DwatSen",
         "FaultDisplay",
         "FbidBloPer",

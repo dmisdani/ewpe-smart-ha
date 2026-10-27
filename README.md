@@ -343,8 +343,7 @@ Devices reporting both `Dwet` and `DwatSen` receive a **Target humidity**
 number (30–80%, in 5% steps), a **Current humidity** sensor, and separate
 **Power** and **Fan speed** controls when their wire keys are present.
 `Dwet` codes 3–13 map to 30–80%; `DwatSen` is read directly as percent.
-The climate entity remains available. Fan speed uses the existing protocol
-mapping; the speeds accepted by a particular model may vary.
+The climate entity remains available. The dehumidifier fan selector offers Low (`WdSpd: 1`) and High (`WdSpd: 3`).
 
 Reload the integration after updating. If **Drain water sensor** was already
 registered, its entity ID is preserved; enable it in the device's entity settings

@@ -4,7 +4,10 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from custom_components.ewpe_smart.number import EwpeTargetHumidityNumber
-from custom_components.ewpe_smart.select import supported_select_descriptions
+from custom_components.ewpe_smart.select import (
+    EwpeSwingSelectEntity,
+    supported_select_descriptions,
+)
 from custom_components.ewpe_smart.sensor import (
     EwpeExtraSensor,
     supported_extra_sensor_descriptions,
@@ -62,3 +65,29 @@ def test_ac_does_not_get_dehumidifier_controls():
     assert "WdSpd" not in {d.param for d in supported_select_descriptions(data)}
     desc = next(d for d in supported_extra_sensor_descriptions(data) if d.param == "DwatSen")
     assert desc.entity_category == "diagnostic"
+
+
+@pytest.mark.parametrize("value,option", [(1, "low"), (3, "high")])
+async def test_dehumidifier_fan_speed(value, option):
+    coord = coordinator({"Dwet": 7, "DwatSen": 55, "WdSpd": value})
+    description = next(
+        d for d in supported_select_descriptions(coord.data) if d.param == "WdSpd"
+    )
+    entity = EwpeSwingSelectEntity(coord, description)
+    assert entity.options == ["low", "high"]
+    assert entity.current_option == option
+    await entity.async_select_option(option)
+    coord.device.set_state.assert_awaited_once_with({"WdSpd": value})
+    coord.async_request_refresh.assert_awaited_once()
+
+
+async def test_dehumidifier_fan_rejects_other_speeds():
+    coord = coordinator({"Dwet": 7, "DwatSen": 55, "WdSpd": 5})
+    description = next(
+        d for d in supported_select_descriptions(coord.data) if d.param == "WdSpd"
+    )
+    entity = EwpeSwingSelectEntity(coord, description)
+    assert entity.current_option is None
+    with pytest.raises(ValueError):
+        await entity.async_select_option("medium")
+    coord.device.set_state.assert_not_awaited()
