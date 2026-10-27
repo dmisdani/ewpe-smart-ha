@@ -349,3 +349,6 @@ Reload the integration after updating. If **Drain water sensor** was already
 registered, its entity ID is preserved; enable it in the device's entity settings
 if it was previously disabled. It now reports current humidity for these devices.
 The former `Dwet` diagnostic is replaced by the target humidity control.
+
+The dehumidifier Power switch follows climate Off/Auto: off sends `Pow: 0`;
+on sends `Pow: 1` together with `Mod: 0` (Auto mode).

@@ -128,7 +128,7 @@ async def test_dehumidifier_power_switch() -> None:
     assert entity.is_on is False
 
     await entity.async_turn_on()
-    device.set_state.assert_awaited_once_with({"Pow": 1})
+    device.set_state.assert_awaited_once_with({"Pow": 1, "Mod": 0})
     entity.coordinator.async_request_refresh.assert_awaited_once()
 
     entity.coordinator.data = {"Dwet": 7, "DwatSen": 55, "Pow": 1}

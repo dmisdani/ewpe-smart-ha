@@ -13,10 +13,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
     DOMAIN,
+    MODE_AUTO,
     PARAM_AIR,
     PARAM_BLO,
     PARAM_HEALTH,
     PARAM_LIG,
+    PARAM_MODE,
+    PARAM_POWER,
     PARAM_QUIET,
     PARAM_SLEEP,
     PARAM_SLEEP_MODE,
@@ -42,6 +45,8 @@ class EwpeSwitchDescription:
     # Params written alongside ``param``, but never read back.
     also_writes: tuple[str, ...] = ()
     on_value: int = POWER_ON
+    # Additional settings needed only when turning the switch on.
+    on_params: tuple[tuple[str, int], ...] = ()
 
 
 SWITCH_DESCRIPTIONS: tuple[EwpeSwitchDescription, ...] = (
@@ -100,9 +105,14 @@ def supported_switch_descriptions(
     """Return switch descriptions whose param appeared in a status reply."""
     descriptions = SWITCH_DESCRIPTIONS + CATALOG_SWITCHES
     if is_dehumidifier(data):
-        descriptions += (EwpeSwitchDescription(
-            param="Pow", unique_id_suffix="power", translation_key="power",
-        ),)
+        descriptions += (
+            EwpeSwitchDescription(
+                param=PARAM_POWER,
+                unique_id_suffix="power",
+                translation_key="power",
+                on_params=((PARAM_MODE, MODE_AUTO),),
+            ),
+        )
     return tuple(desc for desc in descriptions if desc.param in data)
 
 
@@ -152,6 +162,7 @@ class EwpeSwitchEntity(EwpeEntity, SwitchEntity):
             ir.async_create_issue(
                 self.hass,
                 DOMAIN,
+    MODE_AUTO,
                 self._issue_id,
                 is_fixable=True,
                 data={"entity_id": self.entity_id},
@@ -172,13 +183,14 @@ class EwpeSwitchEntity(EwpeEntity, SwitchEntity):
         return bool(value)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        await self._send(self._description.on_value)
+        await self._send(self._description.on_value, turning_on=True)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         await self._send(POWER_OFF)
 
-    async def _send(self, value: int) -> None:
+    async def _send(self, value: int, *, turning_on: bool = False) -> None:
         params = {self._description.param: value}
         params.update(dict.fromkeys(self._description.also_writes, value))
-        await self.coordinator.device.set_state(params)
-        await self.coordinator.async_request_refresh()
+        if turning_on:
+            params.update(self._description.on_params)
+        await self._send_params(params)
