@@ -473,7 +473,7 @@
         "name": "Fan speed",
         "state": {
           "low": "Low",
-          "high": "High"
+          "medium": "Medium"
         }
       }
     },

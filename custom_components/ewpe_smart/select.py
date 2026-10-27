@@ -101,7 +101,7 @@ def supported_select_descriptions(
                 param="WdSpd",
                 unique_id_suffix="fan_speed",
                 translation_key="fan_speed",
-                device_to_option={1: "low", 3: "high"},
+                device_to_option={1: "low", 3: "medium"},
             ),
         )
     return tuple(desc for desc in descriptions if _select_param_supported(desc, data))

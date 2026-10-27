@@ -67,14 +67,14 @@ def test_ac_does_not_get_dehumidifier_controls():
     assert desc.entity_category == "diagnostic"
 
 
-@pytest.mark.parametrize("value,option", [(1, "low"), (3, "high")])
+@pytest.mark.parametrize("value,option", [(1, "low"), (3, "medium")])
 async def test_dehumidifier_fan_speed(value, option):
     coord = coordinator({"Dwet": 7, "DwatSen": 55, "WdSpd": value})
     description = next(
         d for d in supported_select_descriptions(coord.data) if d.param == "WdSpd"
     )
     entity = EwpeSwingSelectEntity(coord, description)
-    assert entity.options == ["low", "high"]
+    assert entity.options == ["low", "medium"]
     assert entity.current_option == option
     await entity.async_select_option(option)
     coord.device.set_state.assert_awaited_once_with({"WdSpd": value})
@@ -89,5 +89,5 @@ async def test_dehumidifier_fan_rejects_other_speeds():
     entity = EwpeSwingSelectEntity(coord, description)
     assert entity.current_option is None
     with pytest.raises(ValueError):
-        await entity.async_select_option("medium")
+        await entity.async_select_option("high")
     coord.device.set_state.assert_not_awaited()
