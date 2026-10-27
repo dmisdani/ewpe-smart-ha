@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -27,6 +28,7 @@ from .params_catalog import (
     TEMP_OFFSET_PARAMS,
     SensorDescriptionRef,
     diagnostic_params,
+    is_dehumidifier,
     param_disabled_by_default,
 )
 
@@ -67,9 +69,14 @@ def supported_extra_sensor_descriptions(
 ) -> tuple[SensorDescriptionRef, ...]:
     """Return explicit sensor descriptions whose param appeared in a status reply."""
     return tuple(
-        desc
+        replace(
+            desc, translation_key="current_humidity", device_class="humidity",
+            state_class="measurement", native_unit_of_measurement="%",
+            percent_range=True, entity_category=None,
+        ) if desc.param == "DwatSen" and is_dehumidifier(data) else desc
         for desc in EXTRA_SENSOR_DESCRIPTIONS
         if desc.param in data
+        and not (desc.param == "Dwet" and is_dehumidifier(data))
         and (desc.param != "mac" or is_valid_status_mac(data[desc.param]))
     )
 
@@ -141,7 +148,9 @@ class EwpeExtraSensor(EwpeEntity, SensorEntity):
         if description.native_unit_of_measurement:
             unit = description.native_unit_of_measurement
             self._attr_native_unit_of_measurement = _UNIT.get(unit, unit)
-        if param_disabled_by_default(description.param):
+        if param_disabled_by_default(description.param) and not (
+            description.param == "DwatSen" and is_dehumidifier(coordinator.data or {})
+        ):
             self._attr_entity_registry_enabled_default = False
 
     @property

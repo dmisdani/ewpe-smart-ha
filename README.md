@@ -336,3 +336,17 @@ firmware version, and `probe.py status --export-cols` output when possible.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+### Dehumidifiers
+
+Devices reporting both `Dwet` and `DwatSen` receive a **Target humidity**
+number (30–80%, in 5% steps), a **Current humidity** sensor, and separate
+**Power** and **Fan speed** controls when their wire keys are present.
+`Dwet` codes 3–13 map to 30–80%; `DwatSen` is read directly as percent.
+The climate entity remains available. Fan speed uses the existing protocol
+mapping; the speeds accepted by a particular model may vary.
+
+Reload the integration after updating. If **Drain water sensor** was already
+registered, its entity ID is preserved; enable it in the device's entity settings
+if it was previously disabled. It now reports current humidity for these devices.
+The former `Dwet` diagnostic is replaced by the target humidity control.

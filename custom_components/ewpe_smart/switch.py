@@ -29,7 +29,7 @@ from .const import (
 from .coordinator import EwpeConfigEntry, EwpeCoordinator
 from .entity import EwpeEntity
 from .params_catalog import SWITCH_DESCRIPTIONS as CATALOG_SWITCH_DESCRIPTIONS
-from .params_catalog import param_disabled_by_default
+from .params_catalog import is_dehumidifier, param_disabled_by_default
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -98,9 +98,12 @@ def supported_switch_descriptions(
     data: Mapping[str, int],
 ) -> tuple[EwpeSwitchDescription, ...]:
     """Return switch descriptions whose param appeared in a status reply."""
-    return tuple(
-        desc for desc in SWITCH_DESCRIPTIONS + CATALOG_SWITCHES if desc.param in data
-    )
+    descriptions = SWITCH_DESCRIPTIONS + CATALOG_SWITCHES
+    if is_dehumidifier(data):
+        descriptions += (EwpeSwitchDescription(
+            param="Pow", unique_id_suffix="power", translation_key="power",
+        ),)
+    return tuple(desc for desc in descriptions if desc.param in data)
 
 
 # Quiet and turbo moved to the climate fan modes. The switches stay for one

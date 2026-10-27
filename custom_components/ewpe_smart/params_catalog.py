@@ -703,3 +703,8 @@ def poll_params(supported: Sequence[str] | None) -> list[str]:
     if supported:
         return list(supported)
     return list(ALL_KNOWN_PARAMS)
+
+
+def is_dehumidifier(data: Mapping[str, Any]) -> bool:
+    """Recognize the paired dehumidifier humidity fields."""
+    return "Dwet" in data and "DwatSen" in data

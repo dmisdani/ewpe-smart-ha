@@ -306,6 +306,9 @@
       },
       "estateinsta24": {
         "name": "Install flag 24"
+      },
+      "current_humidity": {
+        "name": "Current humidity"
       }
     },
     "switch": {
@@ -398,6 +401,9 @@
       },
       "timer_stop": {
         "name": "Timer stop"
+      },
+      "power": {
+        "name": "Power"
       }
     },
     "select": {
@@ -464,6 +470,17 @@
           "center": "Center",
           "right_center": "Right center",
           "right": "Right"
+        }
+      },
+      "fan_speed": {
+        "name": "Fan speed",
+        "state": {
+          "auto": "Auto",
+          "low": "Low",
+          "medium_low": "Medium low",
+          "medium": "Medium",
+          "medium_high": "Medium high",
+          "high": "High"
         }
       }
     },
@@ -547,6 +564,9 @@
       },
       "up_down_fan_port": {
         "name": "Up/down fan port"
+      },
+      "target_humidity": {
+        "name": "Target humidity"
       }
     }
   },

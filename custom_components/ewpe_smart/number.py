@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from homeassistant.components.number import NumberEntity, NumberMode
-from homeassistant.const import UnitOfTemperature, UnitOfTime
+from homeassistant.const import PERCENTAGE, UnitOfTemperature, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -12,6 +12,7 @@ from .entity import EwpeEntity
 from .params_catalog import (
     NUMBER_DESCRIPTIONS,
     NumberDescriptionRef,
+    is_dehumidifier,
     param_disabled_by_default,
 )
 
@@ -41,10 +42,13 @@ async def async_setup_entry(
 ) -> None:
     coordinator = entry.runtime_data
     data = coordinator.data or {}
-    async_add_entities(
+    entities = [
         EwpeNumberEntity(coordinator, description)
         for description in supported_number_descriptions(data)
-    )
+    ]
+    if is_dehumidifier(data):
+        entities.append(EwpeTargetHumidityNumber(coordinator))
+    async_add_entities(entities)
 
 
 class EwpeNumberEntity(EwpeEntity, NumberEntity):
@@ -77,3 +81,29 @@ class EwpeNumberEntity(EwpeEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         await self._send_params({self._description.param: int(round(value))})
+
+
+class EwpeTargetHumidityNumber(EwpeEntity, NumberEntity):
+    """Dehumidifier target: wire codes 3–13 represent 30–80 percent."""
+
+    _attr_translation_key = "target_humidity"
+    _attr_native_min_value = 30
+    _attr_native_max_value = 80
+    _attr_native_step = 5
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_mode = NumberMode.SLIDER
+
+    def __init__(self, coordinator: EwpeCoordinator) -> None:
+        super().__init__(coordinator, "target_humidity")
+
+    @property
+    def native_value(self) -> float | None:
+        value = (self.coordinator.data or {}).get("Dwet")
+        if not isinstance(value, (int, float)) or value not in range(3, 14):
+            return None
+        return float(15 + 5 * value)
+
+    async def async_set_native_value(self, value: float) -> None:
+        if not 30 <= value <= 80 or (value - 30) % 5:
+            raise ValueError("Target humidity must be 30–80 in steps of 5")
+        await self._send_params({"Dwet": int((value - 15) / 5)})
